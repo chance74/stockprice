@@ -6,6 +6,20 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+    }
+    canvas {
+      margin-top: 30px;
+    }
+    input {
+      margin: 5px;
+    }
+  </style>
 </head>
 <body>
   <h2>🧾 보유 종목 입력</h2>
@@ -55,7 +69,7 @@
       const quantities = Object.fromEntries(entries.map(entry => [entry.symbol, entry.quantity]));
 
       try {
-        const baseURL = window.location.origin; // ✅ 현재 주소 기준으로 API 요청
+        const baseURL = window.location.origin;
         const response = await axios.post(`${baseURL}/prices`, { symbols });
         const data = response.data;
 
@@ -74,7 +88,6 @@
         });
 
         const ctx = document.getElementById('portfolioChart').getContext('2d');
-
         if (portfolioChart instanceof Chart) {
           portfolioChart.destroy();
         }
@@ -95,9 +108,22 @@
           },
           options: {
             plugins: {
-              legend: { position: 'right' }
+              legend: { position: 'right' },
+              datalabels: {
+                color: '#000',
+                formatter: (value, context) => {
+                  const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                  const percentage = (value / total * 100).toFixed(1);
+                  return `${percentage}%`;
+                },
+                font: {
+                  weight: 'bold',
+                  size: 14
+                }
+              }
             }
-          }
+          },
+          plugins: [ChartDataLabels]
         });
 
       } catch (error) {
@@ -106,7 +132,7 @@
       }
     });
 
-    generateInputs(); // 기본 입력 3개 생성
+    generateInputs();
   </script>
 </body>
 </html>
