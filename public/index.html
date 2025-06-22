@@ -26,7 +26,7 @@
     function generateInputs() {
       const count = parseInt(document.getElementById('stockCount').value);
       const container = document.getElementById('stockInputs');
-      container.innerHTML = ''; // 초기화
+      container.innerHTML = '';
 
       for (let i = 0; i < count; i++) {
         const div = document.createElement('div');
@@ -54,7 +54,8 @@
       const quantities = Object.fromEntries(entries.map(entry => [entry.symbol, entry.quantity]));
 
       try {
-        const response = await axios.post('https://stockprice-ngqr.onrender.com', { symbols });
+        const baseURL = window.location.origin; // ✅ 현재 주소 기준으로 API 요청
+        const response = await axios.post(`${baseURL}/prices`, { symbols });
         const data = response.data;
 
         const labels = [];
@@ -93,9 +94,7 @@
           },
           options: {
             plugins: {
-              legend: {
-                position: 'right'
-              }
+              legend: { position: 'right' }
             }
           }
         });
@@ -106,7 +105,7 @@
       }
     });
 
-    generateInputs(); // 최초 실행 시 기본 입력칸 생성
+    generateInputs(); // 기본 입력 3개 생성
   </script>
 </body>
 </html>
