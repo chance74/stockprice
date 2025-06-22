@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Finnhub API 키 설정
-const FINNHUB_API_KEY = '여기에_너의_API_KEY_넣기';
+const FINNHUB_API_KEY = 'd1c0df1r01qre5aitfvgd1c0df1r01qre5aitg00';
 
 // 주가 가격 가져오는 API
 app.post('/prices', async (req, res) => {
