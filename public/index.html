@@ -54,7 +54,7 @@
       const quantities = Object.fromEntries(entries.map(entry => [entry.symbol, entry.quantity]));
 
       try {
-        const response = await axios.post('http://localhost:3000/prices', { symbols });
+        const response = await axios.post('https://stockprice-ngqr.onrender.com', { symbols });
         const data = response.data;
 
         const labels = [];
