@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>내 포트폴리오 차트</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h2>🧾 보유 종목 입력</h2>
+  <label>종목 개수:
+    <input type="number" id="stockCount" min="1" max="20" value="3">
+  </label>
+  <button onclick="generateInputs()">입력칸 생성</button>
+
+  <form id="portfolioForm">
+    <div id="stockInputs"></div>
+    <button type="submit">포트폴리오 보기</button>
+  </form>
+
+  <canvas id="portfolioChart" width="600" height="400"></canvas>
+
+  <script>
+    let portfolioChart = null;
+
+    function generateInputs() {
+      const count = parseInt(document.getElementById('stockCount').value);
+      const container = document.getElementById('stockInputs');
+      container.innerHTML = ''; // 초기화
+
+      for (let i = 0; i < count; i++) {
+        const div = document.createElement('div');
+        div.innerHTML = `
+          <input type="text" placeholder="종목코드 (예: TSLA)" name="symbol${i}" required>
+          <input type="number" placeholder="보유수량" name="quantity${i}" min="0" required>
+        `;
+        container.appendChild(div);
+      }
+    }
+
+    document.getElementById('portfolioForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const inputs = Array.from(document.querySelectorAll('#stockInputs div'));
+      const entries = inputs.map(div => {
+        const [symbolInput, quantityInput] = div.querySelectorAll('input');
+        return {
+          symbol: symbolInput.value.trim().toUpperCase(),
+          quantity: parseFloat(quantityInput.value)
+        };
+      });
+
+      const symbols = entries.map(entry => entry.symbol);
+      const quantities = Object.fromEntries(entries.map(entry => [entry.symbol, entry.quantity]));
+
+      try {
+        const response = await axios.post('http://localhost:3000/prices', { symbols });
+        const data = response.data;
+
+        const labels = [];
+        const values = [];
+
+        data.forEach(item => {
+          const qty = quantities[item.symbol] ?? 0;
+          const price = item.price ?? 0;
+          const total = price * qty;
+
+          if (total > 0) {
+            labels.push(item.symbol);
+            values.push(total);
+          }
+        });
+
+        const ctx = document.getElementById('portfolioChart').getContext('2d');
+
+        if (portfolioChart instanceof Chart) {
+          portfolioChart.destroy();
+        }
+
+        portfolioChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: '포트폴리오 비중',
+              data: values,
+              backgroundColor: [
+                '#4dc9f6', '#f67019', '#f53794',
+                '#537bc4', '#acc236', '#166a8f',
+                '#00a950', '#58595b', '#8549ba'
+              ]
+            }]
+          },
+          options: {
+            plugins: {
+              legend: {
+                position: 'right'
+              }
+            }
+          }
+        });
+
+      } catch (error) {
+        alert('데이터를 가져오는데 실패했습니다.');
+        console.error(error);
+      }
+    });
+
+    generateInputs(); // 최초 실행 시 기본 입력칸 생성
+  </script>
+</body>
+</html>
